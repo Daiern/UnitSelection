@@ -40,9 +40,9 @@ ARTSCamera::ARTSCamera()
 
 	//moveComp = CreateDefaultSubobject<UCharacterMovementComponent>(TEXT("Movement Component"));
 
-	iMoveSpeed = 10;
+	iMoveSpeed = 1000;
 	iZoomSpeed = 50;
-	iRotationSpeed = 7;
+	iRotationSpeed = 700;
 	bMiddleMouse = false;
 	iPanSpeed = 1000;
 	iEdgeSize = 50;
@@ -111,7 +111,7 @@ void ARTSCamera::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLif
 
 //***********Move forward server functions
 void ARTSCamera::MoveForward(float delta) {
-	AddActorLocalOffset(FVector(iMoveSpeed*delta, 0, 0));
+	AddActorLocalOffset(FVector(iMoveSpeed*(GetWorld()->GetDeltaSeconds())*delta, 0, 0));
 
 	if (Role < ROLE_Authority) {
 		ServerMoveForward(delta);
@@ -130,7 +130,7 @@ void ARTSCamera::ServerMoveForward_Implementation(float delta) {
 
 //***********Move right server functions
 void ARTSCamera::MoveRight(float delta) {
-	AddActorLocalOffset(FVector(0, iMoveSpeed*delta, 0));
+	AddActorLocalOffset(FVector(0, iMoveSpeed*(GetWorld()->GetDeltaSeconds())*delta, 0));
 
 	if (Role < ROLE_Authority) {
 		ServerMoveRight(delta);
@@ -149,7 +149,7 @@ void ARTSCamera::ServerMoveRight_Implementation(float delta) {
 
 //***********Rotate server functions
 void ARTSCamera::KeyboardRotateCamera(float delta) {
-	AddActorLocalRotation(FRotator(0, iRotationSpeed*delta/4, 0));
+	AddActorLocalRotation(FRotator(0, iRotationSpeed*(GetWorld()->GetDeltaSeconds())*delta/4, 0));
 
 	if (Role < ROLE_Authority) {
 		ServerKeyboardRotateCamera(delta);
@@ -200,7 +200,7 @@ float ARTSCamera::ZoomTilt(float length) {
 //**********Network functions for mouse rotation
 void ARTSCamera::MouseRotateCamera(float delta) {
 	if (bMiddleMouse) {
-		AddActorWorldRotation(FRotator(0, iRotationSpeed*delta, 0));
+		AddActorWorldRotation(FRotator(0, iRotationSpeed*(GetWorld()->GetDeltaSeconds())*delta, 0));
 	}
 
 	if (Role < ROLE_Authority) {
