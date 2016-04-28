@@ -28,6 +28,8 @@ protected:
 	FVector2D mouseStartPosition;
 	FVector2D currentMousePosition;
 
+	FVector mainMoveDirection;
+
 	// Begin PlayerController interface
 	virtual void PlayerTick(float DeltaTime) override;
 	virtual void SetupInputComponent() override;
@@ -62,11 +64,16 @@ protected:
 	bool ServerOnSetDestinationPressed_Validate(FHitResult Hit);
 
 
+	FVector FindMainMoveDirection(FHitResult Hit);
+	
+
 
 	void StartMarqueeSelection();
+	void CheckUnitUnderMarquee();
+
 	void OnSetDestinationReleased();
 	void OnMultiSelectionReleased();
-	void CheckUnitUnderMarquee();
+	
 
 };
 

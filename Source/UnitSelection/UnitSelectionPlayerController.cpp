@@ -224,22 +224,8 @@ void AUnitSelectionPlayerController::OnSetDestinationPressed()
 
 		if (Hit.bBlockingHit)
 		{
-			AUnitSelectionCharacter* movingActor;
-			for (auto& testActor : selectedCharacters) {
-				movingActor = Cast<AUnitSelectionCharacter>(testActor);
-				if (movingActor) {
-					AUSAIController* AIController = Cast<AUSAIController>(movingActor->GetController());
-					if (AIController) {
-						GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("NewMoveDest"));
-						AIController->SetNewMoveDestination(Hit.ImpactPoint);
-					}
-				}
-			}
+			ServerOnSetDestinationPressed(Hit);
 		}
-	}
-
-	if (Role < ROLE_Authority) {
-		ServerOnSetDestinationPressed(Hit);
 	}
 }
 
@@ -247,12 +233,25 @@ void AUnitSelectionPlayerController::ServerOnSetDestinationPressed_Implementatio
 	//OnSetDestinationPressed();
 	if (selectedCharacters.Num() > 0) {
 		
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, selectedCharacters[0]->GetController()->GetName());
-		for (auto& testActor : selectedCharacters) {
-			AUSAIController* AIController = Cast<AUSAIController>(Cast<AUnitSelectionCharacter>(testActor)->GetController());
+	//for (auto& testActor : selectedCharacters) {
+		for (int i = 0; i < selectedCharacters.Num(); i++){
+			AUSAIController* AIController = Cast<AUSAIController>(Cast<AUnitSelectionCharacter>(selectedCharacters[i])->GetController());
 			if (AIController) {
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Client Move"));
-				AIController->SetNewMoveDestination(Hit.ImpactPoint);
+				if (i == 0) {
+					AIController->SetNewMoveDestination(Hit.ImpactPoint);
+				}
+				else if ((i % 2) == 0) {
+					//DO A THING TO LINE UP THE EVENS
+					/*
+					hit.impactpoint + normalizedmovedir.rotatearoundZAxisBy90Deg*offset /////NEED TO MAKE OFFSET
+					*/
+				}
+				else if ((i % 2) == 1) {
+					//DO A THING TO LINE UP THE ODDS
+				}
+				else {
+					//DO NOTHING
+				}
 			}
 		}
 	}
@@ -280,4 +279,8 @@ void AUnitSelectionPlayerController::SetCharsInMarquee(TArray<AUnitSelectionChar
 
 TArray<AUnitSelectionCharacter*> AUnitSelectionPlayerController::GetCharsInMarquee() {
 	return charsInMarquee; 
+}
+
+FVector AUnitSelectionPlayerController::FindMainMoveDirection(FHitResult Hit) {
+	return (Hit.ImpactPoint - selectedCharacters[0]->GetActorLocation()).GetSafeNormal();
 }
