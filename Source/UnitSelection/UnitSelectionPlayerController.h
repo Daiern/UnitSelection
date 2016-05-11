@@ -29,6 +29,7 @@ protected:
 	FVector2D currentMousePosition;
 
 	FVector mainMoveDirection;
+	float lineFormationOffset;
 
 	// Begin PlayerController interface
 	virtual void PlayerTick(float DeltaTime) override;

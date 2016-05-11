@@ -16,6 +16,8 @@ AUnitSelectionPlayerController::AUnitSelectionPlayerController()
 
 	mouseStartPosition = FVector2D(0.f, 0.f);
 	currentMousePosition = FVector2D(0.f, 0.f);
+
+	lineFormationOffset = 300.f;
 }
 
 void AUnitSelectionPlayerController::PlayerTick(float DeltaTime)
@@ -232,6 +234,8 @@ void AUnitSelectionPlayerController::OnSetDestinationPressed()
 void AUnitSelectionPlayerController::ServerOnSetDestinationPressed_Implementation(FHitResult Hit) {
 	//OnSetDestinationPressed();
 	if (selectedCharacters.Num() > 0) {
+
+		int positionCount = 1;
 		
 	//for (auto& testActor : selectedCharacters) {
 		for (int i = 0; i < selectedCharacters.Num(); i++){
@@ -245,9 +249,16 @@ void AUnitSelectionPlayerController::ServerOnSetDestinationPressed_Implementatio
 					/*
 					hit.impactpoint + normalizedmovedir.rotatearoundZAxisBy90Deg*offset /////NEED TO MAKE OFFSET
 					*/
+					FVector moveLocation = Hit.ImpactPoint + FindMainMoveDirection(Hit).RotateAngleAxis(90, FVector(0, 0, 1))*lineFormationOffset*positionCount;
+					AIController->SetNewMoveDestination(moveLocation);
+
+					positionCount++;
 				}
 				else if ((i % 2) == 1) {
 					//DO A THING TO LINE UP THE ODDS
+
+					FVector moveLocation = Hit.ImpactPoint + FindMainMoveDirection(Hit).RotateAngleAxis(270, FVector(0, 0, 1))*lineFormationOffset*positionCount;
+					AIController->SetNewMoveDestination(moveLocation);
 				}
 				else {
 					//DO NOTHING
