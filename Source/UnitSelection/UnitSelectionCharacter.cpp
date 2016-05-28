@@ -28,6 +28,7 @@ AUnitSelectionCharacter::AUnitSelectionCharacter()
 	SelectDecal->SetVisibility(false);
 
 	bIsSelected = false;
+	bIsDead = false;
 
 	team = "None";
 

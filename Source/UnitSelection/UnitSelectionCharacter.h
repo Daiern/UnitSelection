@@ -13,6 +13,11 @@ class AUnitSelectionCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Selection, meta = (AllowPrivateAccess = "true"), Replicated)
 	bool bIsSelected;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Selection, meta = (AllowPrivateAccess = "true"), Replicated)
+	bool bIsDead;
+
+
+
 public:
 	AUnitSelectionCharacter();
 
