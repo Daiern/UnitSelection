@@ -30,7 +30,7 @@ AUnitSelectionCharacter::AUnitSelectionCharacter()
 	bIsSelected = false;
 	bIsDead = false;
 
-	team = "None";
+	Team = "None";
 
 }
 
@@ -55,3 +55,7 @@ void AUnitSelectionCharacter::MCShowDecal_Implementation() {
 /*bool AUnitSelectionCharacter::ServerShowDecal_Validate() {
 	return true;
 }*/
+
+FName AUnitSelectionCharacter::GetTeam() {
+	return Team;
+}

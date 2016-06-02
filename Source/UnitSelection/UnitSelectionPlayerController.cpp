@@ -6,7 +6,7 @@
 #include "USAIController.h"
 #include "UnrealNetwork.h"
 #include "Engine.h"
-#include "UnitSelectionHUD.h"
+//#include "UnitSelectionHUD.h"
 #include "AI/Navigation/NavigationSystem.h"
 
 AUnitSelectionPlayerController::AUnitSelectionPlayerController()
@@ -18,28 +18,43 @@ AUnitSelectionPlayerController::AUnitSelectionPlayerController()
 	currentMousePosition = FVector2D(0.f, 0.f);
 
 	lineFormationOffset = 300.f;
+
+	PCHud = nullptr;
+
+	TeamName = "NO TEAM";
 }
+
+void AUnitSelectionPlayerController::BeginPlay() {
+	Super::BeginPlay();
+
+	PCHud = Cast<AUnitSelectionHUD>(GetHUD());
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TeamName.ToString());
+}
+
 
 void AUnitSelectionPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
+	
+	if (PCHud){
+		if (PCHud->bIsSelecting == true) {
 
-	if (Cast<AUnitSelectionHUD>(GetHUD())->bIsSelecting == true) {
+			ULocalPlayer* const LocalPlayer = Cast<ULocalPlayer>(this->Player);
 
-		ULocalPlayer* const LocalPlayer = Cast<ULocalPlayer>(this->Player);
-
-		if (LocalPlayer && LocalPlayer->ViewportClient && LocalPlayer->ViewportClient->Viewport) {
-			if (LocalPlayer->ViewportClient->GetMousePosition(currentMousePosition) == false)
-			{
-				return;
+			if (LocalPlayer && LocalPlayer->ViewportClient && LocalPlayer->ViewportClient->Viewport) {
+				if (LocalPlayer->ViewportClient->GetMousePosition(currentMousePosition) == false)
+				{
+					return;
+				}
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Marquee Selecting"));
+				PCHud->vCurrentMousePos = currentMousePosition;
+				if ((currentMousePosition - mouseStartPosition).Size() > 5) {
+					CheckUnitUnderMarquee();
+				}
 			}
-			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Marquee Selecting"));
-			Cast<AUnitSelectionHUD>(GetHUD())->vCurrentMousePos = currentMousePosition;
-			if ((currentMousePosition - mouseStartPosition).Size() > 5) {
-				CheckUnitUnderMarquee();
-			}
+
 		}
-		
 	}
 
 }
@@ -48,11 +63,11 @@ void AUnitSelectionPlayerController::CheckUnitUnderMarquee() {
 	FVector2D startPoint, endPoint, screenLocation;
 	FBox2D marqueeBox;
 
-	AUnitSelectionHUD* hud = Cast<AUnitSelectionHUD>(GetHUD());
 	
-	if (hud) {
-		startPoint = FVector2D(FMath::Min(hud->vMouseStartPos.X, hud->vCurrentMousePos.X), FMath::Min(hud->vMouseStartPos.Y, hud->vCurrentMousePos.Y));
-		endPoint = FVector2D(FMath::Max(hud->vMouseStartPos.X, hud->vCurrentMousePos.X), FMath::Max(hud->vMouseStartPos.Y, hud->vCurrentMousePos.Y));
+	
+	if (PCHud) {
+		startPoint = FVector2D(FMath::Min(PCHud->vMouseStartPos.X, PCHud->vCurrentMousePos.X), FMath::Min(PCHud->vMouseStartPos.Y, PCHud->vCurrentMousePos.Y));
+		endPoint = FVector2D(FMath::Max(PCHud->vMouseStartPos.X, PCHud->vCurrentMousePos.X), FMath::Max(PCHud->vMouseStartPos.Y, PCHud->vCurrentMousePos.Y));
 		marqueeBox = FBox2D(startPoint, endPoint);
 
 		for (TActorIterator<AUnitSelectionCharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr)
@@ -65,7 +80,7 @@ void AUnitSelectionPlayerController::CheckUnitUnderMarquee() {
 				}
 			}
 			else {
-				if (USChar->GetIsSelected() && !Cast<AUnitSelectionHUD>(GetHUD())->bIsMultiSelecting) {
+				if (USChar->GetIsSelected() && !PCHud->bIsMultiSelecting) {
 					ServerRemoveSelection(USChar);
 				}
 			}
@@ -87,6 +102,8 @@ void AUnitSelectionPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Select", IE_Released, this, &AUnitSelectionPlayerController::OnSelectionReleased);
 	InputComponent->BindAction("MultiSelect", IE_Pressed, this, &AUnitSelectionPlayerController::OnMultiSelectionPressed);
 	InputComponent->BindAction("MultiSelect", IE_Released, this, &AUnitSelectionPlayerController::OnMultiSelectionReleased);
+	InputComponent->BindAction("SetTeamRed", IE_Pressed, this, &AUnitSelectionPlayerController::SetTeamRed);
+	InputComponent->BindAction("SetTeamBlue", IE_Pressed, this, &AUnitSelectionPlayerController::SetTeamBlue);
 
 
 }
@@ -109,8 +126,8 @@ void AUnitSelectionPlayerController::StartMarqueeSelection() {
 		}
 	}
 
-	Cast<AUnitSelectionHUD>(GetHUD())->vMouseStartPos = mouseStartPosition;
-	Cast<AUnitSelectionHUD>(GetHUD())->bIsSelecting = true;
+	PCHud->vMouseStartPos = mouseStartPosition;
+	PCHud->bIsSelecting = true;
 
 	
 }
@@ -137,10 +154,12 @@ void AUnitSelectionPlayerController::OnSelectionPressed() {
 void AUnitSelectionPlayerController::ServerAddSelection_Implementation(AActor* actor) {
 	AUnitSelectionCharacter* newActor = Cast<AUnitSelectionCharacter>(actor);
 	if (newActor) {
-		//add newly selected actor to list as only actor selected and set it's selection bool to true
-		selectedCharacters.Emplace(newActor);
-		newActor->SetIsSelected(true);
-		newActor->MCShowDecal();
+		if (newActor->GetTeam() == TeamName) {
+			//add newly selected actor to list as only actor selected and set it's selection bool to true
+			selectedCharacters.Emplace(newActor);
+			newActor->SetIsSelected(true);
+			newActor->MCShowDecal();
+		}
 	}
 }
 
@@ -186,12 +205,12 @@ bool AUnitSelectionPlayerController::ServerEmptySelection_Validate() {
 
 
 void AUnitSelectionPlayerController::OnSelectionReleased() {
-	Cast<AUnitSelectionHUD>(GetHUD())->bIsSelecting = false;
+	PCHud->bIsSelecting = false;
 }
 
 void AUnitSelectionPlayerController::OnMultiSelectionReleased() {
-	Cast<AUnitSelectionHUD>(GetHUD())->bIsMultiSelecting = false;
-	Cast<AUnitSelectionHUD>(GetHUD())->bIsSelecting = false;
+	PCHud->bIsMultiSelecting = false;
+	PCHud->bIsSelecting = false;
 }
 
 
@@ -199,7 +218,7 @@ void AUnitSelectionPlayerController::OnMultiSelectionReleased() {
 void AUnitSelectionPlayerController::OnMultiSelectionPressed() {
 
 	StartMarqueeSelection();
-	Cast<AUnitSelectionHUD>(GetHUD())->bIsMultiSelecting = true;
+	PCHud->bIsMultiSelecting = true;
 
 	FHitResult Hit;
 	GetHitResultUnderCursor(ECC_Pawn, false, Hit);
@@ -294,4 +313,18 @@ TArray<AUnitSelectionCharacter*> AUnitSelectionPlayerController::GetCharsInMarqu
 
 FVector AUnitSelectionPlayerController::FindMainMoveDirection(FHitResult Hit) {
 	return (Hit.ImpactPoint - selectedCharacters[0]->GetActorLocation()).GetSafeNormal();
+}
+
+void AUnitSelectionPlayerController::SetTeamRed() {
+	TeamName = "Red";
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TeamName.ToString());
+
+}
+
+void AUnitSelectionPlayerController::SetTeamBlue() {
+	TeamName = "Blue";
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TeamName.ToString());
+
 }

@@ -10,6 +10,8 @@ class AUnitSelectionGameMode : public AGameMode
 
 public:
 	AUnitSelectionGameMode();
+
+	//virtual void PostLogin(APlayerController* NewPlayer);
 };
 
 

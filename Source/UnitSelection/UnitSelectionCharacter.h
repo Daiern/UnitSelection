@@ -31,7 +31,9 @@ public:
 	class UDecalComponent* SelectDecal;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Selection)
-	FName team;
+	FName Team;
+
+	FName GetTeam();
 
 	UFUNCTION(Reliable, NetMulticast)
 	void MCShowDecal();

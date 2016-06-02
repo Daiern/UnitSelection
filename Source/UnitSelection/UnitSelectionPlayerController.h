@@ -2,6 +2,7 @@
 #pragma once
 #include "GameFramework/PlayerController.h"
 #include "UnitSelectionCharacter.h"
+#include "UnitSelectionHUD.h"
 #include "UnitSelectionPlayerController.generated.h"
 
 UCLASS()
@@ -14,6 +15,9 @@ public:
 
 	void SetCharsInMarquee(TArray<AUnitSelectionCharacter*> chars);
 	TArray<AUnitSelectionCharacter*> GetCharsInMarquee();
+
+	AUnitSelectionHUD* PCHud;
+	FName TeamName;
 
 protected:
 	/** True if the controlled character should navigate to the mouse cursor. */
@@ -34,6 +38,7 @@ protected:
 	// Begin PlayerController interface
 	virtual void PlayerTick(float DeltaTime) override;
 	virtual void SetupInputComponent() override;
+	virtual void BeginPlay() override;
 	// End PlayerController interface
 
 	/** Add new pawn to selectedPawns on left-click */
@@ -74,6 +79,9 @@ protected:
 
 	void OnSetDestinationReleased();
 	void OnMultiSelectionReleased();
+
+	void SetTeamRed();
+	void SetTeamBlue();
 	
 
 };
