@@ -17,6 +17,8 @@ public:
 	TArray<AUnitSelectionCharacter*> GetCharsInMarquee();
 
 	AUnitSelectionHUD* PCHud;
+
+	UPROPERTY(Replicated)
 	FName TeamName;
 
 protected:
@@ -82,6 +84,16 @@ protected:
 
 	void SetTeamRed();
 	void SetTeamBlue();
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void ServerSetTeamRed();
+	void ServerSetTeamRed_Implementation();
+	bool ServerSetTeamRed_Validate();
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void ServerSetTeamBlue();
+	void ServerSetTeamBlue_Implementation();
+	bool ServerSetTeamBlue_Validate();
 	
 
 };

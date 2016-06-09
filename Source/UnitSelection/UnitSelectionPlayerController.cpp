@@ -21,7 +21,7 @@ AUnitSelectionPlayerController::AUnitSelectionPlayerController()
 
 	PCHud = nullptr;
 
-	TeamName = "NO TEAM";
+	TeamName = "Blue";
 }
 
 void AUnitSelectionPlayerController::BeginPlay() {
@@ -114,6 +114,7 @@ void AUnitSelectionPlayerController::GetLifetimeReplicatedProps(TArray< FLifetim
 
 	// Replicate to everyone
 	DOREPLIFETIME(AUnitSelectionPlayerController, selectedCharacters);
+	DOREPLIFETIME(AUnitSelectionPlayerController, TeamName);
 }
 
 void AUnitSelectionPlayerController::StartMarqueeSelection() {
@@ -170,7 +171,7 @@ bool AUnitSelectionPlayerController::ServerAddSelection_Validate(AActor* actor) 
 void AUnitSelectionPlayerController::ServerRemoveSelection_Implementation(AActor* actor) {
 	AUnitSelectionCharacter* newActor = Cast<AUnitSelectionCharacter>(actor);
 	if (newActor) {
-		//add newly selected actor to list as only actor selected and set it's selection bool to true
+		//remove and set actor as unselected
 		selectedCharacters.Remove(newActor);
 		newActor->SetIsSelected(false);
 		newActor->MCShowDecal();
@@ -318,13 +319,41 @@ FVector AUnitSelectionPlayerController::FindMainMoveDirection(FHitResult Hit) {
 void AUnitSelectionPlayerController::SetTeamRed() {
 	TeamName = "Red";
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TeamName.ToString());
+	if (Role < ROLE_Authority) {
+		ServerSetTeamRed();
+	}
+}
 
+void AUnitSelectionPlayerController::ServerSetTeamRed_Implementation() {
+	TeamName = "Red";
+	if (Role < ROLE_Authority) {
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TeamName.ToString());
+	}
+
+}
+
+bool AUnitSelectionPlayerController::ServerSetTeamRed_Validate() {
+	return true;
 }
 
 void AUnitSelectionPlayerController::SetTeamBlue() {
 	TeamName = "Blue";
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TeamName.ToString());
+	if (Role < ROLE_Authority) {
+		ServerSetTeamBlue();
+	}
+}
 
+void AUnitSelectionPlayerController::ServerSetTeamBlue_Implementation() {
+	TeamName = "Blue";
+	if (Role < ROLE_Authority) {
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TeamName.ToString());
+	}
+
+}
+
+bool AUnitSelectionPlayerController::ServerSetTeamBlue_Validate() {
+	return true;
 }
