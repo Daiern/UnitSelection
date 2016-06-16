@@ -159,7 +159,12 @@ void AUnitSelectionPlayerController::ServerAddSelection_Implementation(AActor* a
 			//add newly selected actor to list as only actor selected and set it's selection bool to true
 			selectedCharacters.Emplace(newActor);
 			newActor->SetIsSelected(true);
-			newActor->MCShowDecal();
+			if (Role < ROLE_Authority) {
+				newActor->ClientShowDecal();
+			}else {
+				newActor->ShowDecal();
+			}
+			
 		}
 	}
 }
@@ -174,7 +179,7 @@ void AUnitSelectionPlayerController::ServerRemoveSelection_Implementation(AActor
 		//remove and set actor as unselected
 		selectedCharacters.Remove(newActor);
 		newActor->SetIsSelected(false);
-		newActor->MCShowDecal();
+		newActor->ShowDecal();
 	}
 }
 
@@ -190,7 +195,7 @@ void AUnitSelectionPlayerController::ServerEmptySelection_Implementation() {
 		unselectActor = Cast<AUnitSelectionCharacter>(testActor);
 		if (unselectActor) {
 			unselectActor->SetIsSelected(false);
-			unselectActor->MCShowDecal();
+			unselectActor->ShowDecal();
 
 		}
 	}

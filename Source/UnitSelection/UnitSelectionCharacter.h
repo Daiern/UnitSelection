@@ -35,9 +35,11 @@ public:
 
 	FName GetTeam();
 
-	UFUNCTION(Reliable, NetMulticast)
-	void MCShowDecal();
-	void MCShowDecal_Implementation();
+	void ShowDecal();
+
+	UFUNCTION(Reliable, Client)
+	void ClientShowDecal();
+	void ClientShowDecal_Implementation();
 	//bool ServerShowDecal_Validate();
 };
 

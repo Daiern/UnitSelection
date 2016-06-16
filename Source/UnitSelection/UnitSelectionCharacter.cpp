@@ -43,7 +43,24 @@ void AUnitSelectionCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProper
 	DOREPLIFETIME(AUnitSelectionCharacter, bIsSelected);	
 }
 
-void AUnitSelectionCharacter::MCShowDecal_Implementation() {
+
+void AUnitSelectionCharacter::ShowDecal() {
+	/*if (Role < ROLE_Authority) {
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Before Client call"));
+		ClientShowDecal();
+	} else {/*/
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Authority"));
+		if (bIsSelected) {
+			SelectDecal->SetVisibility(true);
+		}
+		else {
+			SelectDecal->SetVisibility(false);
+		}
+	//}
+}
+		
+void AUnitSelectionCharacter::ClientShowDecal_Implementation() {
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("In Client Call"));
 	if (bIsSelected) {
 		SelectDecal->SetVisibility(true);
 	}
